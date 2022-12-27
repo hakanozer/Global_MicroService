@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,19 @@ public class ProductService {
         hm.put(REnum.status, true);
         hm.put(REnum.result, repository.findAll() );
         return new ResponseEntity(hm, HttpStatus.OK);
+    }
+
+    public ResponseEntity single( Long pid ) {
+        Map<REnum, Object> hm = new LinkedHashMap<>();
+        Optional<Product> optionalProduct = repository.findById(pid);
+        if (optionalProduct.isPresent()) {
+            hm.put(REnum.status, true);
+            hm.put(REnum.result, optionalProduct.get() );
+            return new ResponseEntity(hm, HttpStatus.OK);
+        }
+        hm.put(REnum.status, false);
+        hm.put(REnum.message, "Product Not Found ID");
+        return new ResponseEntity(hm, HttpStatus.BAD_REQUEST);
     }
 
 }
