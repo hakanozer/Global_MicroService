@@ -4,6 +4,10 @@ import com.works.entities.Product;
 import com.works.repositories.ProductRepository;
 import com.works.utils.REnum;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,10 +37,17 @@ public class ProductService {
     }
 
 
-    public ResponseEntity list() {
+    public ResponseEntity list( int pageCount ) {
         Map<REnum, Object> hm = new LinkedHashMap<>();
+
+        // Sort
+        Sort sort = Sort.by(Sort.Direction.DESC, "price" );
+        Pageable page = PageRequest.of(pageCount, 5, sort);
+        Page<Product> list = repository.findAll(page);
+
+
         hm.put(REnum.status, true);
-        hm.put(REnum.result, repository.findAll() );
+        hm.put(REnum.result, list );
         return new ResponseEntity(hm, HttpStatus.OK);
     }
 
