@@ -22,6 +22,8 @@ public class GlobalFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) servletResponse;
 
         String url = req.getRequestURI();
+        String ip = req.getRemoteAddr();
+
         String[] urls = {"/customer/login", "/customer/register", "/error"};
         boolean status = true;
         for( String item : urls ) {
