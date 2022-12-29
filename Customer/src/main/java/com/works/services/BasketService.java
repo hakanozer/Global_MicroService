@@ -1,14 +1,19 @@
 package com.works.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.works.entities.Customer;
 import com.works.props.Basket;
+import com.works.props.JmsData;
 import com.works.props.ProductData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.*;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,14 +31,12 @@ public class BasketService {
     final HttpServletRequest request;
     final RestTemplate restTemplate;
     final ObjectMapper objectMapper;
+    final JmsTemplate jmsTemplate;
 
+    //@HystrixCommand(fallbackMethod = "defaultAddBasket", commandProperties = {
+      //      @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000")
+    //})
     public ResponseEntity addBasket( Long pid ) {
-
-        /*
-        int i = 1;
-        int x = 0;
-        int y = i / x;
-         */
 
         Map<String, Object> hm = new LinkedHashMap<>();
         Customer customer = (Customer) request.getSession().getAttribute("customer");
@@ -43,6 +46,15 @@ public class BasketService {
         try {
             ProductData data = restTemplate.getForObject(url, ProductData.class);
             addBasket(customer.getCid(), data.getResult().getPid() );
+
+            // JMS Send Message
+            Gson gson = new Gson();
+            JmsData jmsData = new JmsData();
+            jmsData.setId( customer.getCid() );
+            jmsData.setName(customer.getName());
+            jmsData.setMessage(data.getResult().getTitle());
+            String sendData = gson.toJson(jmsData);
+            jmsTemplate.convertAndSend(sendData);
             return new ResponseEntity(data, HttpStatus.OK);
         }catch (Exception ex) {
             hm.put("status", false);
@@ -68,6 +80,14 @@ public class BasketService {
             System.out.println( entityData.getBody() );
         }catch (Exception ex) { }
 
+    }
+
+    public ResponseEntity defaultAddBasket( Long pid ) {
+        Map<String, Object> hm = new LinkedHashMap<>();
+        hm.put("status", false);
+        hm.put("message", "Product Service Server Error");
+        hm.put("pid", pid);
+        return new ResponseEntity(hm, HttpStatus.OK);
     }
 
 }
