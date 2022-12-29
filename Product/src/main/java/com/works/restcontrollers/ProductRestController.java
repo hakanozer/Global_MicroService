@@ -36,6 +36,11 @@ public class ProductRestController {
         return service.single(pid);
     }
 
+    @GetMapping("/catID/{cid}")
+    public ResponseEntity catID( @PathVariable Long cid ) {
+        return service.catID(cid);
+    }
+
 
 
 

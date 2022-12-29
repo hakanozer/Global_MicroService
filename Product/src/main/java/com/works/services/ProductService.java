@@ -79,4 +79,11 @@ public class ProductService {
     }
 
 
+    public ResponseEntity catID( Long cid ) {
+        Map<REnum, Object> hm = new LinkedHashMap<>();
+        hm.put(REnum.status, true);
+        hm.put(REnum.result, repository.findByCategories_CidEquals(cid) );
+        return new ResponseEntity(hm, HttpStatus.OK);
+    }
+
 }
