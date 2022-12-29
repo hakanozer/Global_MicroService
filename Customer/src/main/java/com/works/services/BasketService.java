@@ -5,6 +5,7 @@ import com.works.entities.Customer;
 import com.works.props.Basket;
 import com.works.props.ProductData;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.*;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasketService {
 
     final DiscoveryClient client;
@@ -26,6 +28,13 @@ public class BasketService {
     final ObjectMapper objectMapper;
 
     public ResponseEntity addBasket( Long pid ) {
+
+        /*
+        int i = 1;
+        int x = 0;
+        int y = i / x;
+         */
+
         Map<String, Object> hm = new LinkedHashMap<>();
         Customer customer = (Customer) request.getSession().getAttribute("customer");
         List<ServiceInstance> list = client.getInstances("product");
@@ -39,7 +48,6 @@ public class BasketService {
             hm.put("status", false);
             hm.put("message", ex.getMessage());
         }
-
         return new ResponseEntity(hm, HttpStatus.OK);
     }
 
